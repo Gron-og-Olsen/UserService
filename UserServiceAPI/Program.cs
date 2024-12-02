@@ -1,22 +1,26 @@
+using MongoDB.Driver;
+using Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configure MongoDB settings
+var mongoSettings = builder.Configuration.GetSection("MongoDB");
+var connectionString = mongoSettings["ConnectionString"];
+var databaseName = mongoSettings["DatabaseName"];
+var collectionName = mongoSettings["CollectionName"];
+
+// Register MongoDB services
+builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(connectionString));
+builder.Services.AddSingleton(sp =>
+{
+    var client = sp.GetRequiredService<IMongoClient>();
+    var database = client.GetDatabase(databaseName);
+    return database.GetCollection<User>(collectionName);
+});
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
