@@ -1,3 +1,28 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace UserServiceTest
+{
+    [TestClass]
+    public class Tests
+    {
+        // This method will be run before each test method
+        [TestInitialize]
+        public void Setup()
+        {
+            // Initialization code goes here
+        }
+
+        // A sample test method
+        [TestMethod]
+        public void Test1()
+        {
+            // You can add your test logic here
+            Assert.IsTrue(true); // A simple test assertion
+        }
+    }
+}
+
+
 /*
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
