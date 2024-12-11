@@ -1,6 +1,16 @@
 using MongoDB.Driver;
 using Models;
 using Microsoft.AspNetCore.Identity;
+using NLog;
+using NLog.Web;
+
+
+
+try
+{
+var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings()
+.GetCurrentClassLogger();
+logger.Debug("init main");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +33,8 @@ builder.Services.AddSingleton(sp =>
 });
 
 builder.Services.AddControllers();
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 var app = builder.Build();
 
@@ -31,3 +43,15 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+}
+catch (Exception ex)
+{
+    var logger = NLog.LogManager.GetCurrentClassLogger();
+    logger.Error(ex, "Stopped program because of exception");
+    throw;
+}
+finally
+{
+    NLog.LogManager.Shutdown();
+}
