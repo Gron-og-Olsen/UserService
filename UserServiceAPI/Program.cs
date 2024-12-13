@@ -4,46 +4,49 @@ using Microsoft.AspNetCore.Identity;
 using NLog;
 using NLog.Web;
 
-
-
 try
 {
-var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings()
-.GetCurrentClassLogger();
-logger.Debug("init main");
+    var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings()
+        .GetCurrentClassLogger();
+    logger.Debug("init main");
 
-var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
-// Register PasswordHasher for User
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+    // Register PasswordHasher for User
+    builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
-// Configure MongoDB settings
-var mongoSettings = builder.Configuration.GetSection("MongoDB");
-var connectionString = mongoSettings["ConnectionString"];
-var databaseName = mongoSettings["DatabaseName"];
-var collectionName = mongoSettings["CollectionName"];
+    // Retrieve the MongoDB connection string from the environment variable in docker-compose.yml
+    var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING");
+    var databaseName = Environment.GetEnvironmentVariable("DatabaseName");
+    var collectionName = Environment.GetEnvironmentVariable("CollectionName");
 
-// Register MongoDB services
-builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(connectionString));
-builder.Services.AddSingleton(sp =>
-{
-    var client = sp.GetRequiredService<IMongoClient>();
-    var database = client.GetDatabase(databaseName);
-    return database.GetCollection<User>(collectionName);
-});
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("MongoDB connection string is not set in the environment variables.");
+    }
 
-builder.Services.AddControllers();
-builder.Logging.ClearProviders();
-builder.Host.UseNLog();
+    var mongoSettings = builder.Configuration.GetSection("MongoDB");
+    
+    // Register MongoDB services
+    builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(connectionString));
+    builder.Services.AddSingleton(sp =>
+    {
+        var client = sp.GetRequiredService<IMongoClient>();
+        var database = client.GetDatabase(databaseName);
+        return database.GetCollection<User>(collectionName);
+    });
 
-var app = builder.Build();
+    builder.Services.AddControllers();
+    builder.Logging.ClearProviders();
+    builder.Host.UseNLog();
 
-app.UseAuthorization();
+    var app = builder.Build();
 
-app.MapControllers();
+    app.UseAuthorization();
 
-app.Run();
+    app.MapControllers();
 
+    app.Run();
 }
 catch (Exception ex)
 {
