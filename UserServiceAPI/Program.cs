@@ -17,8 +17,8 @@ try
 
     // Retrieve the MongoDB connection string from the environment variable in docker-compose.yml
     var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING");
-    var databaseName = Environment.GetEnvironmentVariable("DatabaseName");
-    var collectionName = Environment.GetEnvironmentVariable("CollectionName");
+    var databaseName = Environment.GetEnvironmentVariable("UserDatabaseName");
+    var collectionName = Environment.GetEnvironmentVariable("UserCollectionName");
 
     if (string.IsNullOrEmpty(connectionString))
     {
