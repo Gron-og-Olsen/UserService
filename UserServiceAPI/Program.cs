@@ -16,7 +16,8 @@ try
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
     // Retrieve the MongoDB connection string from the environment variable in docker-compose.yml
-    var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING");
+    var connectionString = Environment.GetEnvironmentVariable("MONGO_CONNECTION_STRING")
+                                        ?? throw new InvalidOperationException("MongoDB connection string is not set in the environment variables.");
     var databaseName = Environment.GetEnvironmentVariable("UserDatabaseName");
     var collectionName = Environment.GetEnvironmentVariable("UserCollectionName");
 
